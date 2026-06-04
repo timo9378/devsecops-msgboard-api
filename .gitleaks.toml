@@ -1,0 +1,14 @@
+title = "gitleaks config — msgboard-api"
+
+# 沿用 gitleaks 內建規則
+[extend]
+useDefault = true
+
+# 允許清單：app/config.py 裡明顯的 dev 佔位字串（正式環境由 env / k8s Secret 覆蓋）。
+# gitleaks 仍會抓真正洩漏的高熵金鑰；只是不對這兩個 placeholder 報假陽性。
+[allowlist]
+description = "Known non-secret dev placeholders (overridden by env / Secret in prod)"
+regexes = [
+  '''dev-secret-do-not-use-in-prod''',
+  '''changeme''',
+]
