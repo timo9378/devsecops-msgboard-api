@@ -62,34 +62,39 @@ push to GitHub
 
 ## 3. 測試過程（繳交用紀錄）
 
-> 截圖請放每次 GitHub Actions run 的結果頁（Actions 分頁 → 點該次 commit）。
+### 紀錄總覽（實際 GitHub Actions runs）
 
-### 3.1 成功紀錄 ✅
-- Commit：`<baseline commit 連結>`
-- 結果：所有 job 綠燈（test / build / dependency-scan / secret-scan / sast）。
+| # | 紀錄 | commit | run | 結果 |
+|---|---|---|---|---|
+| 1 | 成功（基線） | `31afcdd` | [26959181034](https://github.com/timo9378/devsecops-msgboard-api/actions/runs/26959181034) | ✅ 5 job 全綠 |
+| 2 | 故意失敗（功能測試） | `1bfe4de` | [26959686892](https://github.com/timo9378/devsecops-msgboard-api/actions/runs/26959686892) | ❌ test 紅、build 被擋 |
+| 3 | 修正後成功 | `923cb74` | [26959810880](https://github.com/timo9378/devsecops-msgboard-api/actions/runs/26959810880) | ✅ 回綠 |
+| 4 | 依賴弱點（修補前） | `320ba60` | [26959975464](https://github.com/timo9378/devsecops-msgboard-api/actions/runs/26959975464) | ❌ dependency-scan 紅 |
+| 5 | 依賴弱點（修補後） | `527e622` | [26960098370](https://github.com/timo9378/devsecops-msgboard-api/actions/runs/26960098370) | ✅ 回綠 |
+
+> 截圖請到上表對應 run 頁面擷取；建議檔名如下供文件引用。
+
+### 3.1 成功紀錄 ✅（run 26959181034）
+- 所有 job 綠燈：test / build / dependency-scan / secret-scan / sast。
 - 截圖：`docs/01-success.png`
 
-### 3.2 故意失敗紀錄 ❌（功能測試）
-- 改動：把 `app/auth.py` 的 `verify_password` 故意改成永遠回傳 `True`，
-  使測試 `test_wrong_password_rejected` 失敗。
-- Commit：`<break commit 連結>`
-- 結果：**test job 紅燈**，pipeline 在合併前就擋下錯誤。
+### 3.2 故意失敗紀錄 ❌（功能測試，run 26959686892）
+- 改動：`app/auth.py` 的 `verify_password` 故意改成永遠回傳 `True`，使 `test_wrong_password_rejected` 失敗。
+- 結果：**test job 紅燈**，且 **build job 因 `needs: test` 被 skip**——pipeline 在打包前就擋下缺陷。
 - 截圖：`docs/02-test-fail.png`
 
-### 3.3 修正後再次成功 ✅
+### 3.3 修正後再次成功 ✅（run 26959810880）
 - 改動：還原 `verify_password`。
-- Commit：`<fix commit 連結>`
-- 結果：test job 恢復綠燈。
+- 結果：test job 恢復綠燈，全 pipeline 回綠。
 - 截圖：`docs/03-test-fix.png`
 
 ### 3.4 套件弱點 — 修補前 / 後（加分）
-- **修補前**：把 `requirements.txt` 的 JWT 套件降回 `PyJWT==2.10.1`，該版本帶有
-  **7 個 CVE**（含演算法允許清單繞過 PYSEC-2026-176、HMAC 金鑰混淆 PYSEC-2026-179、
-  crit header 未驗證 PYSEC-2026-120 等）。
-  → **dependency-scan job 紅燈**，pip-audit 報告列出這些 CVE 與對應 fix 版本。
+- **修補前**（run 26959975464）：`PyJWT==2.10.1`，帶 **7 個 CVE**
+  （PYSEC-2026-176/179/175/177/178/120、PYSEC-2025-183）。
+  → **dependency-scan job 紅燈**，test/build 仍綠（凸顯掃描階段獨立把關）。
   - 截圖：`docs/04-vuln-before.png`
-- **修補後**：升級為 `PyJWT==2.13.0`（**程式碼零改動，只改版號**）。
-  → pip-audit 乾淨、dependency-scan 綠燈。
+- **修補後**（run 26960098370）：升級為 `PyJWT==2.13.0`（**只改版號、程式碼零改動**）。
+  → pip-audit 乾淨、dependency-scan 回綠。
   - 截圖：`docs/05-vuln-after.png`
 
 ---
