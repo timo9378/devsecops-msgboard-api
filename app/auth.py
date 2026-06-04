@@ -26,9 +26,7 @@ def hash_password(plain: str) -> str:
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    # BUG（故意引入）：略過實際比對、永遠回傳 True，
-    # 用來示範 CI 的 pytest 能在合併前攔截功能缺陷。
-    return True
+    return pwd_ctx.verify(plain, hashed)
 
 
 def issue_token(user_id: int, username: str) -> str:
