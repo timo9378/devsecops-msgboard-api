@@ -7,3 +7,8 @@ venv/
 *.sarif
 *-report.json
 test-results.xml
+
+# 交件用文件（PDF/Word），不進 repo；repo 以 README.md 為主
+繳交文件.pdf
+繳交文件.docx
+繳交文件.html
